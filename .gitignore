@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+*.local
+.DS_Store
+# Nunca subir extractos reales
+*.xls
+*.xlsx
+!tests/fixtures/*.xls
