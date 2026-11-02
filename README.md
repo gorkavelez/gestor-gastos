@@ -2,6 +2,8 @@
 
 App web personal para **importar extractos bancarios, categorizar los movimientos, analizar el gasto y recibir consejos** para ahorrar e invertir.
 
+**Abrir la app (móvil u ordenador):** <https://gorkavelez.github.io/gestor-gastos/>
+
 - **100 % en el navegador.** El extracto se lee en tu dispositivo y los datos se guardan en IndexedDB. No hay servidor ni base de datos. Nada sale de tu móvil u ordenador.
 - **El repositorio solo contiene código.** Puede ser público sin exponer tus finanzas. `.gitignore` bloquea `*.xls`/`*.xlsx` para que no subas un extracto por error.
 - **Instalable en el móvil (PWA).** En Chrome o Safari, usa «Añadir a pantalla de inicio». Funciona sin conexión.
