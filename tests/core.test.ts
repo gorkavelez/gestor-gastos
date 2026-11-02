@@ -84,6 +84,12 @@ describe('categorías', () => {
     expect(c('AMORTIZACION PRESTAMO HIPOTECARIO')).toBe('vivienda'); // la hipoteca sigue en vivienda
     expect(DEFAULT_CATEGORIES.some((k) => k.id === 'prestamos')).toBe(true);
   });
+  it('altruismo y donaciones', () => {
+    expect(c('RECIBO UNICEF COMITE ESPAÑOL')).toBe('donaciones');
+    expect(c('RECIBO CRUZ ROJA')).toBe('donaciones');
+    expect(c('COMPRA T.C. BANCO DE ALIMENTOS')).toBe('donaciones'); // no supermercado
+    expect(DEFAULT_CATEGORIES.some((k) => k.id === 'donaciones')).toBe(true);
+  });
   it('coincide al inicio de palabra', () => {
     expect(c('COMPRA T.C. BARRACUDA SHOP')).toBe('sin-categoria'); // "BAR " no casa con BARRACUDA
   });

@@ -1,4 +1,4 @@
-import Dexie, { type EntityTable } from 'dexie';
+import Dexie, { type EntityTable, type Transaction as DexieTx } from 'dexie';
 import type { Category, Rule, Transaction } from './core/types';
 import { DEFAULT_CATEGORIES, DEFAULT_RULES, categorize, recategorizeAll } from './core/categories';
 import { DEFAULT_SETTINGS, type Settings } from './core/analysis';
@@ -19,6 +19,24 @@ interface KV {
   value: unknown;
 }
 
+const SCHEMA = {
+  transactions: 'id, date, categoryId, account, importId',
+  rules: 'id, categoryId, source',
+  categories: 'id',
+  imports: 'id, at',
+  kv: 'key',
+};
+
+/** Añade las categorías por defecto que falten y solo sus reglas (no repone reglas borradas). */
+async function addMissingDefaults(tx: DexieTx) {
+  const have = new Set((await tx.table('categories').toCollection().primaryKeys()) as string[]);
+  const added = DEFAULT_CATEGORIES.filter((c) => !have.has(c.id));
+  if (!added.length) return;
+  const ids = new Set(added.map((c) => c.id));
+  await tx.table('categories').bulkAdd(added);
+  await tx.table('rules').bulkPut(DEFAULT_RULES.filter((r) => ids.has(r.categoryId)));
+}
+
 /** Todo vive en IndexedDB de tu navegador. Nada sale del dispositivo. */
 class GastosDB extends Dexie {
   transactions!: EntityTable<Transaction, 'id'>;
@@ -29,28 +47,10 @@ class GastosDB extends Dexie {
 
   constructor() {
     super('gestor-gastos');
-    this.version(1).stores({
-      transactions: 'id, date, categoryId, account, importId',
-      rules: 'id, categoryId, source',
-      categories: 'id',
-      imports: 'id, at',
-      kv: 'key',
-    });
-    // v2: añade a bases ya creadas las categorías y reglas por defecto nuevas (p. ej. préstamos).
-    this.version(2)
-      .stores({
-        transactions: 'id, date, categoryId, account, importId',
-        rules: 'id, categoryId, source',
-        categories: 'id',
-        imports: 'id, at',
-        kv: 'key',
-      })
-      .upgrade(async (tx) => {
-        const cats = new Set((await tx.table('categories').toCollection().primaryKeys()) as string[]);
-        await tx.table('categories').bulkAdd(DEFAULT_CATEGORIES.filter((c) => !cats.has(c.id)));
-        const rules = new Set((await tx.table('rules').toCollection().primaryKeys()) as string[]);
-        await tx.table('rules').bulkAdd(DEFAULT_RULES.filter((r) => !rules.has(r.id)));
-      });
+    this.version(1).stores(SCHEMA);
+    // Cada versión nueva añade a bases ya creadas las categorías por defecto que falten.
+    this.version(2).stores(SCHEMA).upgrade(addMissingDefaults); // préstamos y créditos
+    this.version(3).stores(SCHEMA).upgrade(addMissingDefaults); // altruismo y donaciones
     this.on('populate', async (tx) => {
       await tx.table('categories').bulkAdd(DEFAULT_CATEGORIES);
       await tx.table('rules').bulkAdd(DEFAULT_RULES);
