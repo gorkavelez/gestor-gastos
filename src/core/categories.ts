@@ -14,6 +14,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'educacion', name: 'Educación e hijos', kind: 'expense', need: 'need', icon: '🎒' },
   { id: 'seguros', name: 'Seguros', kind: 'expense', need: 'need', icon: '🛡️' },
   { id: 'impuestos', name: 'Impuestos y tasas', kind: 'expense', need: 'need', icon: '🏛️' },
+  { id: 'prestamos', name: 'Préstamos y créditos', kind: 'expense', need: 'need', icon: '💳' },
   // Gastos discrecionales
   { id: 'hosteleria', name: 'Bares y restaurantes', kind: 'expense', need: 'want', icon: '🍻' },
   { id: 'ocio', name: 'Ocio y suscripciones', kind: 'expense', need: 'want', icon: '🎬' },
@@ -42,6 +43,7 @@ const DEFAULT_PATTERNS: Record<string, string[]> = {
   salud: ['FARMACIA', 'CLINICA', 'DENTAL', 'DENTISTA', 'OPTICA', 'FISIO', 'HOSPITAL', 'SANITAS', 'IMQ'],
   educacion: ['COLEGIO', 'IKASTOLA', 'ESCUELA', 'ACADEMIA', 'LIBRERIA', 'GUARDERIA', 'HAURRESKOLA', 'AMPA', 'EXTRAESCOLAR'],
   seguros: ['SEGURO', 'MAPFRE', 'LAGUN ARO', 'MUTUA', 'ALLIANZ', 'AXA', 'LINEA DIRECTA', 'GENERALI', 'KUTXABANK SEGUROS'],
+  prestamos: ['PRESTAMO', 'CREDITO', 'AMORTIZACION', 'FINANCIACION', 'CETELEM', 'COFIDIS', 'SANTANDER CONSUMER', 'PAGO APLAZADO'],
   impuestos: ['HACIENDA', 'IBI', 'AYUNTAMIENTO', 'UDALA', 'DIPUTACION', 'DGT', 'IMPUESTO', 'TASA '],
   ocio: ['NETFLIX', 'SPOTIFY', 'HBO', 'MAX ', 'DISNEY', 'PRIME VIDEO', 'APPLE.COM', 'GOOGLE PLAY', 'STEAM', 'PLAYSTATION', 'CINE', 'TEATRO', 'TICKETMASTER', 'KULTUR', 'MUSEO', 'DAZN', 'MOVISTAR PLUS'],
   compras: ['AMAZON', 'ZARA', 'DECATHLON', 'CORTE INGLES', 'PRIMARK', 'IKEA', 'LEROY', 'MEDIA MARKT', 'MEDIAMARKT', 'ALIEXPRESS', 'SHEIN', 'PCCOMPONENTES', 'FNAC', 'BERSHKA', 'PULL&BEAR', 'BRICO', 'KIABI', 'CARREFOUR ONLINE'],

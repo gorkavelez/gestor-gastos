@@ -36,6 +36,21 @@ class GastosDB extends Dexie {
       imports: 'id, at',
       kv: 'key',
     });
+    // v2: añade a bases ya creadas las categorías y reglas por defecto nuevas (p. ej. préstamos).
+    this.version(2)
+      .stores({
+        transactions: 'id, date, categoryId, account, importId',
+        rules: 'id, categoryId, source',
+        categories: 'id',
+        imports: 'id, at',
+        kv: 'key',
+      })
+      .upgrade(async (tx) => {
+        const cats = new Set((await tx.table('categories').toCollection().primaryKeys()) as string[]);
+        await tx.table('categories').bulkAdd(DEFAULT_CATEGORIES.filter((c) => !cats.has(c.id)));
+        const rules = new Set((await tx.table('rules').toCollection().primaryKeys()) as string[]);
+        await tx.table('rules').bulkAdd(DEFAULT_RULES.filter((r) => !rules.has(r.id)));
+      });
     this.on('populate', async (tx) => {
       await tx.table('categories').bulkAdd(DEFAULT_CATEGORIES);
       await tx.table('rules').bulkAdd(DEFAULT_RULES);

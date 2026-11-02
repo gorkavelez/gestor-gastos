@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import * as XLSX from 'xlsx';
 import { parseStatement, withIds } from '../src/core/parsers';
 import { parseAmount, parseDate } from '../src/core/parsers/util';
 import { categorize, DEFAULT_CATEGORIES, DEFAULT_RULES, merchantKey } from '../src/core/categories';
@@ -8,9 +8,24 @@ import { buildInsights, claudeSummary } from '../src/core/advice';
 import { demoRows } from '../src/core/demo';
 import type { Transaction } from '../src/core/types';
 
+// Extracto inventado con la estructura del real (cabecera en fila 5/7, fila vacía,
+// fechas como texto, conceptos con relleno). Se genera en memoria: no se sube ningún .xls.
 const fixture = () => {
-  const b = readFileSync(new URL('./fixtures/kutxabank-ejemplo.xls', import.meta.url));
-  return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
+  const rows = [
+    ['22/10/2026', 'TRASPASO AHORRA LAS VUELTAS       ', '22/10/2026', -3.2, 613.94],
+    ['22/10/2026', 'RECIBO BIDEGI                   ', '22/10/2026', -2.24, 611.7],
+    ['23/10/2026', 'COMPRA T.C. BAR AGIRRE           ', '23/10/2026', -17.3, 594.4],
+    ['23/10/2026', 'COMPRA T.C. ALIMENTACION GOIKOA  ', '23/10/2026', -8.98, 585.42],
+    ['24/10/2026', 'COMPRA T.C. BAR AGIRRE           ', '24/10/2026', -5.8, 579.62],
+    ['24/10/2026', 'COMPRA T.C. BAR AGIRRE           ', '24/10/2026', -5.8, 573.82],
+    ['26/10/2026', 'TRANSF. 0182 PERSONA DEMO        ', '26/10/2026', -266, 307.82],
+    ['26/10/2026', 'OP.NET                           ', '26/10/2026', 80, 387.82],
+    ['01/11/2026', 'NOMINA EMPRESA DEMO SL           ', '01/11/2026', 2000, 2387.82],
+  ];
+  const aoa = [[null], [null], [null], ['kutxabank'], ['Movimientos de cuenta'], [null], ['fecha', 'concepto', 'fecha valor', 'importe', 'saldo'], [null], ...rows];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'Listado');
+  return XLSX.write(wb, { bookType: 'biff8', type: 'array' }) as ArrayBuffer;
 };
 
 const toTx = (rows: ReturnType<typeof demoRows>): Transaction[] =>
@@ -62,6 +77,12 @@ describe('categorías', () => {
     expect(c('NOMINA EMPRESA', 2000)).toBe('nomina');
     expect(c('OP.NET', 80)).toBe('otros-ingresos');
     expect(c('COSA RARA')).toBe('sin-categoria');
+  });
+  it('préstamos y créditos', () => {
+    expect(c('RECIBO CETELEM')).toBe('prestamos');
+    expect(c('CUOTA PRESTAMO PERSONAL')).toBe('prestamos');
+    expect(c('AMORTIZACION PRESTAMO HIPOTECARIO')).toBe('vivienda'); // la hipoteca sigue en vivienda
+    expect(DEFAULT_CATEGORIES.some((k) => k.id === 'prestamos')).toBe(true);
   });
   it('coincide al inicio de palabra', () => {
     expect(c('COMPRA T.C. BARRACUDA SHOP')).toBe('sin-categoria'); // "BAR " no casa con BARRACUDA
